@@ -3,14 +3,23 @@
 
 #include <stdbool.h>
 
+#define NULL ((void *)0)
+#define die exit(-1)
 static unsigned counter_allocation;
 static unsigned counter_deallocation;
 
-typedef struct List
+struct List
 {
     int data;
     struct List *next;
-} List;
+};
+typedef struct List List;
+
+struct LinkedList
+{
+    List *head;
+};
+typedef struct LinkedList LinkedList;
 
 /**
  * @brief Create a new linked list.
@@ -21,19 +30,39 @@ typedef struct List
 List *list_init(List *list);
 
 /**
+ * @brief Add a new list to the linked list.
+ * 
+ * @param head The linked list's head.
+ * @param new The list to be added.
+ */
+void linkedlist_add(LinkedList *l, List *new);
+
+/**
  * @brief Deallocates a linked list.
  * 
  * @param list The pointer to memory.
  */
-void list_destroy(List *list);
+static inline void list_destroy(List *list)
+{
+    free(list);
+    list = NULL;
+    ++counter_deallocation;
+}
 
-void list_delete_all(List *head);
-/**
- * @brief Add a new list to the linked list to the end.
- * 
- * @param list Lis to be added to th end.
- */
-void list_add_last(List *head, List *list);
+static inline void linkedlist_delete(LinkedList *l)
+{
+    if (l)
+        list_delete_all(l->head);
+}
+
+static inline void list_remove(List *head, List *target)
+{
+    List **current = list_find_indirect(head, target);
+    *current = target->next;
+    list_destroy(target);
+}
+
+void list_insert_before(List *head, List *before, List *item);
 
 void list_display(List *head);
 
@@ -86,5 +115,12 @@ void list_print_all(void);
  */
 static bool linked_list_exists(List *head, unsigned index);
 static void check_allocation(void *const list);
+static List **list_find_indirect(List *head, List *target);
+static inline void list_delete_all(List *head)
+{
+    if (head->next)
+        list_delete_all(head->next);
+    list_destroy(head);
+}
 
 #endif //LIST_H

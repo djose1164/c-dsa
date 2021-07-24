@@ -15,26 +15,46 @@ List *list_init(List *list)
     return mem;
 }
 
-void list_destroy(List *list)
+void linkedlist_add(LinkedList *l, List *new)
 {
-    free(list);
-    list = NULL;
-    ++counter_deallocation;
+    if (!list_is_valid(new))
+    {
+        fprintf(stderr, "List no valid!");
+        die;
+    }
+    List *current = l->head;
+    if (!current)
+    {
+        current = new;
+        return;
+    }
+
+    for (; current->next; current = current->next)
+        ;
+    current->next = new;
+    new->next = NULL;
 }
 
-void list_delete_all(List *head)
+static List **list_find_indirect(List *head, List *target)
 {
-    if (head->next)
-        list_delete_all(head->next);
-    if (head)
-        list_destroy(head);
+    List **current = &head;
+
+    while ((*current) && (*current) != target)
+        current = &(*current)->next;
+    return current;
 }
-void list_add_last(List *head, List *list)
+
+void list_insert_before(List *head, List *before, List *item)
 {
-    if (!head->next)
-        head->next = list;
-    else
-        list_add_last(head->next, list);
+    /**
+     * @brief Hay que ver cuando before es el ultimo elemento para q no se haga
+     * un bucle.
+     * 
+     */
+    List **current = list_find_indirect(head, before);
+    *current = item;
+    before->next = NULL;
+    item->next = before;
 }
 
 void list_display(List *head)
@@ -46,8 +66,6 @@ void list_display(List *head)
     putchar('\n');
 }
 
-List linked_list_print(void);
-
 void is_memory_good()
 {
     if (counter_allocation == counter_deallocation)
@@ -57,7 +75,6 @@ void is_memory_good()
                         "\a\tAllocations: %d\tDeallocations: %d\n",
                 counter_allocation, counter_deallocation);
 }
-
 
 /****************************************************************************/
 /*                            Private functions.                            */

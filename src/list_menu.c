@@ -60,6 +60,6 @@ void list_menu()
     List *head = list_menu_create_necessary(list_quantity);
     list_menu_fill(head);
     list_display(head);
-    list_delete_all(head);
+   // linkedlist_delete(head);
     is_memory_good();
 }
